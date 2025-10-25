@@ -84,11 +84,28 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
+    
+    - id: create-argocd-app
+      name: Deploy with ArgoCD
+      action: debug:log
+      input:
+        message: |
+          🚀 Service created successfully!
+          
+          To deploy to Kubernetes, apply the ArgoCD application:
+          kubectl apply -f https://raw.githubusercontent.com/${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}/main/argocd/application.yaml
+          
+          Or manually: kubectl apply -f argocd/application.yaml from the repo
 
   output:
     links:
       - title: Repository
         url: ${{ steps.publish.output.remoteUrl }}
+        icon: github
       - title: Open in Backstage
         entityRef: ${{ steps.register.output.entityRef }}
+        icon: catalog
+      - title: View in ArgoCD
+        url: http://argocd.impelligent-idp.local/applications/${{ parameters.name }}
+        icon: dashboard
 

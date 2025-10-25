@@ -5,11 +5,24 @@ metadata:
   description: ${{values.description}}
   annotations:
     github.com/project-slug: ${{values.destination.owner}}/${{values.destination.repo}}
+    backstage.io/kubernetes-id: ${{values.name}}
+    backstage.io/kubernetes-namespace: ${{values.namespace}}
+    argocd/app-name: ${{values.name}}
+    backstage.io/techdocs-ref: dir:.
   tags:
     - python
     - fastapi
+    - api
+  links:
+    - url: http://argocd.impelligent-idp.local/applications/${{values.name}}
+      title: ArgoCD Application
+      icon: dashboard
+    - url: https://github.com/${{values.destination.owner}}/${{values.destination.repo}}
+      title: Source Code
+      icon: github
 spec:
   type: service
   lifecycle: experimental
   owner: ${{values.owner}}
+  system: impelligent-idp
 
