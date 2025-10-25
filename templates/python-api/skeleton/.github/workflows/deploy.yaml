@@ -13,7 +13,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
       
     steps:
@@ -89,4 +89,3 @@ jobs:
           echo "### View Deployment" >> $GITHUB_STEP_SUMMARY
           echo "- [ArgoCD UI](http://argocd.impelligent-idp.local/applications/${{values.name}})" >> $GITHUB_STEP_SUMMARY
           echo "- [Backstage](http://backstage.impelligent-idp.local:3001/catalog/default/component/${{values.name}})" >> $GITHUB_STEP_SUMMARY
-
