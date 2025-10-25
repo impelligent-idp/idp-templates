@@ -1,0 +1,106 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.App-header {
+  max-width: 800px;
+  padding: 2rem;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.description {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  margin: 2rem 0;
+}
+
+button {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.info-card h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.info-card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.info-card dt {
+  font-weight: bold;
+  opacity: 0.9;
+}
+
+.info-card dd {
+  margin: 0;
+}
+
+.links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.links a {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.links a:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+

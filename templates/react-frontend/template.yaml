@@ -1,19 +1,20 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: python-api
-  title: Python FastAPI Service
-  description: Create a new Python API with FastAPI, CI/CD pipeline, and Kubernetes deployment
+  name: react-frontend
+  title: React Frontend Application
+  description: Create a new React frontend with Nginx, CI/CD, Ingress, and Kubernetes deployment
   tags:
-    - python
-    - fastapi
-    - api
+    - react
+    - frontend
+    - web
+    - recommended
 spec:
   owner: platform-team
-  type: service
+  type: website
   
   parameters:
-    - title: Service Information
+    - title: Application Information
       required:
         - name
         - description
@@ -22,8 +23,9 @@ spec:
         name:
           title: Name
           type: string
-          description: Unique name for this service
+          description: Unique name for this frontend app
           pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
         description:
           title: Description
           type: string
@@ -38,10 +40,11 @@ spec:
           title: Kubernetes Namespace
           type: string
           default: default
-        port:
-          title: Service Port
-          type: number
-          default: 8000
+        subdomain:
+          title: Subdomain
+          type: string
+          description: Subdomain for accessing the app (e.g., my-app.impelligent-idp.local)
+          pattern: '^[a-z0-9-]+$'
     
     - title: Repository
       required:
@@ -68,7 +71,7 @@ spec:
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
           namespace: ${{ parameters.namespace }}
-          port: ${{ parameters.port }}
+          subdomain: ${{ parameters.subdomain or parameters.name }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
           
     - id: publish
@@ -108,10 +111,13 @@ spec:
       - title: Open in Backstage
         entityRef: ${{ steps.register.output.entityRef }}
         icon: catalog
+      - title: View Application
+        url: http://${{ parameters.subdomain or parameters.name }}.impelligent-idp.local
+        icon: dashboard
       - title: View in ArgoCD
         url: http://argocd.impelligent-idp.local/applications/${{ parameters.name }}
         icon: dashboard
-      - title: GitHub Actions (Build & Deploy)
+      - title: GitHub Actions
         url: ${{ steps.publish.output.remoteUrl }}/actions
         icon: github
 
