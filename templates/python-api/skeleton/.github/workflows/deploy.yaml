@@ -65,15 +65,18 @@ jobs:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
         run: |
           if [ -n "$KUBECONFIG_CONTENT" ]; then
-            echo "Applying ArgoCD application..."
+            echo "Applying ArgoCD application to cluster..."
             mkdir -p ~/.kube
             echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
             kubectl apply -f argocd/application.yaml
-            kubectl get application -n idp-system ${{values.name}} || echo "Application will be synced by ArgoCD"
+            echo "✅ ArgoCD Application deployed successfully"
           else
-            echo "⚠️  KUBECONFIG secret not set - skipping ArgoCD deployment"
-            echo "To enable auto-deployment, add KUBECONFIG secret to repository"
-            echo "For now, manually apply: kubectl apply -f argocd/application.yaml"
+            echo "⚠️  KUBECONFIG secret not set"
+            echo "ArgoCD application created in repo but not applied to cluster"
+            echo "To enable auto-deployment, add KUBECONFIG secret to repository settings"
+            echo ""
+            echo "For now, apply manually:"
+            echo "  kubectl apply -f argocd/application.yaml"
           fi
 
       - name: Summary
