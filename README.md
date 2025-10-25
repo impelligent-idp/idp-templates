@@ -6,32 +6,33 @@
 
 This repository contains Backstage software templates and golden path definitions for creating new services, applications, and infrastructure components.
 
-## Templates Available
+## Templates Available (v1.0.0)
 
-### Application Templates
+### Application Templates ✅
 
-1. **Go Microservice** (`templates/go-service/`)
+1. **Go Microservice** (`templates/go-service/`) ✅ **READY**
    - REST API with Gin framework
    - Dockerfile multi-stage build
    - Kubernetes manifests
    - Tekton pipeline
    - ArgoCD application definition
+   - Full catalog-info.yaml
 
-2. **React Frontend** (`templates/react-frontend/`)
+2. **Python API** (`templates/python-api/`) ✅ **READY**
+   - FastAPI framework
+   - Requirements.txt dependency management
+   - Docker deployment
+   - Kubernetes manifests
+   - Backstage catalog integration
+
+### Planned Templates (v1.1.0+) 🔜
+
+3. **React Frontend** (`templates/react-frontend/`)
    - TypeScript + Vite
    - Component library setup
    - Docker nginx deployment
    - CI/CD pipeline
    - Environment configuration
-
-3. **Python API** (`templates/python-api/`)
-   - FastAPI framework
-   - Poetry dependency management
-   - Docker deployment
-   - Unit test setup
-   - Pipeline configuration
-
-### Infrastructure Templates
 
 4. **Database Setup** (`templates/database/`)
    - PostgreSQL configuration
@@ -83,26 +84,41 @@ ${{values.namespace}}         # Kubernetes namespace
 
 ## Usage
 
-### Via Backstage (When Available)
-1. Open Backstage UI
-2. Click "Create" → "Choose a template"
-3. Fill in the form
-4. Template creates repo, pipeline, and deployment
+### v1.0.0: Manual Template Usage
 
-### Manual Usage
+For v1.0.0, use templates manually by copying skeleton directories:
+
 ```bash
-# Clone template
+# Clone templates repo
 git clone https://github.com/impelligent-idp/idp-templates.git
-cd idp-templates/templates/go-service/skeleton
+cd idp-templates
 
-# Copy to new project
-cp -r . /path/to/new-service
+# Option 1: Go Microservice
+cp -r templates/go-service/skeleton ~/git/my-new-service
+cd ~/git/my-new-service
 
-# Customize
-# - Replace ${{values.name}} with your service name
-# - Update dependencies
-# - Customize configuration
+# Customize:
+# 1. Replace service name in all files
+# 2. Update go.mod with your module path
+# 3. Customize main.go, Dockerfile, k8s/, tekton/, argocd/
+# 4. Update catalog-info.yaml with your info
+# 5. git init && git add . && git commit -m "Initial commit"
+# 6. git push to your repo
+# 7. Deploy via ArgoCD
+
+# Option 2: Python API
+cp -r templates/python-api/skeleton ~/git/my-new-api
+# Follow similar steps
 ```
+
+### v1.1.0+: Via Backstage UI (Planned) 🔜
+
+Once Backstage UI is fully operational:
+1. Open Backstage at http://backstage.impelligent-idp.local
+2. Click "Create" → "Choose a template"
+3. Fill in the form (name, owner, description)
+4. Click "Create" - template scaffolds everything automatically
+5. Repo, pipeline, and ArgoCD app created automatically
 
 ## Creating New Templates
 
