@@ -1,0 +1,89 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update Kubernetes deployment image tag
+        run: |
+          # Update deployment to use the SHA-tagged image for traceability
+          IMAGE_TAG="${{ github.sha }}"
+          sed -i "s|image:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${IMAGE_TAG:0:7}|g" k8s/deployment.yaml
+          cat k8s/deployment.yaml
+
+      - name: Commit updated deployment
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add k8s/deployment.yaml
+          git diff --staged --quiet || git commit -m "chore: update image tag to ${{ github.sha }}"
+          git push || echo "No changes to push"
+
+      - name: Deploy ArgoCD Application
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
+        run: |
+          if [ -n "$KUBECONFIG_CONTENT" ]; then
+            echo "Applying ArgoCD application..."
+            mkdir -p ~/.kube
+            echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
+            kubectl apply -f argocd/application.yaml
+            kubectl get application -n idp-system ${{values.name}} || echo "Application will be synced by ArgoCD"
+          else
+            echo "⚠️  KUBECONFIG secret not set - skipping ArgoCD deployment"
+            echo "To enable auto-deployment, add KUBECONFIG secret to repository"
+            echo "For now, manually apply: kubectl apply -f argocd/application.yaml"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Docker image built and pushed" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "🚀 ArgoCD will sync the deployment automatically" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### View Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- [ArgoCD UI](http://argocd.impelligent-idp.local/applications/${{values.name}})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Backstage](http://backstage.impelligent-idp.local:3001/catalog/default/component/${{values.name}})" >> $GITHUB_STEP_SUMMARY
+
