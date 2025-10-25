@@ -1,0 +1,25 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{values.name}}
+  description: ${{values.description}}
+  annotations:
+    github.com/project-slug: ${{values.destination.owner}}/${{values.destination.repo}}
+    argocd/app-name: ${{values.name}}
+    tekton.dev/pipeline: ${{values.name}}-pipeline
+  tags:
+    - go
+    - microservice
+  links:
+    - url: https://github.com/${{values.destination.owner}}/${{values.destination.repo}}
+      title: Repository
+      icon: github
+    - url: https://localhost:8080/applications/${{values.name}}
+      title: ArgoCD
+      icon: dashboard
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{values.owner}}
+  system: idp-platform
+

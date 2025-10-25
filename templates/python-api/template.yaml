@@ -1,0 +1,96 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: python-api
+  title: Python FastAPI Service
+  description: Create a new Python API with FastAPI, CI/CD pipeline, and Kubernetes deployment
+  tags:
+    - python
+    - fastapi
+    - api
+spec:
+  owner: platform-team
+  type: service
+  
+  parameters:
+    - title: Service Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for this service
+          pattern: '^[a-z0-9-]+$'
+        description:
+          title: Description
+          type: string
+        owner:
+          title: Owner
+          type: string
+          ui:field: OwnerPicker
+    
+    - title: Configuration
+      properties:
+        namespace:
+          title: Kubernetes Namespace
+          type: string
+          default: default
+        port:
+          title: Service Port
+          type: number
+          default: 8000
+    
+    - title: Repository
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - impelligent-idp
+
+  steps:
+    - id: fetch-base
+      name: Fetch Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          namespace: ${{ parameters.namespace }}
+          port: ${{ parameters.port }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in Backstage
+        entityRef: ${{ steps.register.output.entityRef }}
+

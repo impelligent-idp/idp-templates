@@ -1,0 +1,133 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: go-microservice
+  title: Go Microservice
+  description: Create a new Go microservice with REST API, CI/CD pipeline, and Kubernetes deployment
+  tags:
+    - go
+    - microservice
+    - recommended
+spec:
+  owner: platform-team
+  type: service
+  
+  parameters:
+    - title: Service Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for this service
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+          ui:help: 'Use lowercase letters, numbers, and hyphens only'
+        description:
+          title: Description
+          type: string
+          description: What does this service do?
+        owner:
+          title: Owner
+          type: string
+          description: Team or person responsible for this service
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+              - User
+    
+    - title: Configuration
+      required:
+        - namespace
+        - port
+      properties:
+        namespace:
+          title: Kubernetes Namespace
+          type: string
+          description: Which namespace should this service run in?
+          default: default
+          enum:
+            - default
+            - production
+            - staging
+            - development
+        port:
+          title: Service Port
+          type: number
+          description: Port that the service listens on
+          default: 8080
+        replicas:
+          title: Number of Replicas
+          type: number
+          description: How many pods to run
+          default: 2
+          minimum: 1
+          maximum: 10
+    
+    - title: Repository
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - impelligent-idp
+
+  steps:
+    - id: fetch-base
+      name: Fetch Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          namespace: ${{ parameters.namespace }}
+          port: ${{ parameters.port }}
+          replicas: ${{ parameters.replicas }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        repoVisibility: public
+        
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+        
+    - id: create-argocd-app
+      name: Create ArgoCD Application
+      action: debug:log
+      input:
+        message: 'ArgoCD application will be created automatically via GitOps'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in Backstage
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+      - title: View in ArgoCD
+        url: https://localhost:8080/applications/${{ parameters.name }}
+
