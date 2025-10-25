@@ -4,7 +4,7 @@ metadata:
   name: idp-templates
   description: Software templates for the Impelligent IDP
   annotations:
-    backstage.io/managed-by-location: url:https://github.com/impelligent-idp/idp-templates/tree/main/catalog-info.yaml
+    backstage.io/managed-by-location: url:https://github.com/impelligent-idp/idp-templates/blob/main/catalog-info.yaml
 spec:
   type: url
   targets:
