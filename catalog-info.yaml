@@ -10,4 +10,5 @@ spec:
   targets:
     - ./templates/go-service/template.yaml
     - ./templates/python-api/template.yaml
+    - ./templates/react-frontend/template.yaml
 
