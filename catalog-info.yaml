@@ -8,7 +8,7 @@ metadata:
 spec:
   type: url
   targets:
-    - https://raw.githubusercontent.com/impelligent-idp/idp-templates/main/templates/go-service/template.yaml
-    - https://raw.githubusercontent.com/impelligent-idp/idp-templates/main/templates/python-api/template.yaml
-    - https://raw.githubusercontent.com/impelligent-idp/idp-templates/main/templates/react-frontend/template.yaml
+    - https://api.github.com/repos/impelligent-idp/idp-templates/contents/templates/go-service/template.yaml
+    - https://api.github.com/repos/impelligent-idp/idp-templates/contents/templates/python-api/template.yaml
+    - https://api.github.com/repos/impelligent-idp/idp-templates/contents/templates/react-frontend/template.yaml
 
