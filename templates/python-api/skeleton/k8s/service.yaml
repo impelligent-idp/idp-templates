@@ -4,8 +4,8 @@ metadata:
   name: ${{values.name}}
   namespace: ${{values.namespace}}
   labels:
-    app: ${{values.name}}
-    backstage.io/kubernetes-id: ${{values.name}}
+    app: "${{values.name}}"
+    backstage.io/kubernetes-id: "${{values.name}}"
 spec:
   type: ClusterIP
   ports:
@@ -14,5 +14,5 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: ${{values.name}}
+    app: "${{values.name}}"
 
