@@ -21,6 +21,8 @@ spec:
         prometheus.io/port: "${{values.port}}"
         prometheus.io/path: "/metrics"
     spec:
+      imagePullSecrets:
+      - name: ghcr-credentials
       containers:
       - name: ${{values.name}}
         image: ghcr.io/${{values.destination.owner}}/${{values.name}}:latest

@@ -114,10 +114,23 @@ spec:
         catalogInfoPath: '/catalog-info.yaml'
         
     - id: create-argocd-app
-      name: Create ArgoCD Application
-      action: debug:log
+      name: Deploy with ArgoCD
+      action: kubernetes:apply:github
       input:
-        message: 'ArgoCD application will be created automatically via GitOps'
+        owner: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
+        repo: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
+        manifestPath: argocd/application.yaml
+        namespace: idp-system
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - id: trigger-build
+      name: Trigger Initial Build & Deploy
+      action: github:actions:dispatch
+      input:
+        workflowId: deploy.yaml
+        repoUrl: ${{ parameters.repoUrl }}
+        branchOrTagName: main
+        workflowInputs: {}
 
   output:
     links:

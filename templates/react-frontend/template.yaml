@@ -88,24 +88,15 @@ spec:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
     
-    - id: fetch-argocd-app
-      name: Fetch ArgoCD Application
-      action: fetch:plain:file
-      input:
-        url: ${{ steps.publish.output.repoContentsUrl }}/argocd/application.yaml
-        targetPath: ./argocd-app.yaml
-    
-    - id: apply-argocd-app
+    - id: create-argocd-app
       name: Deploy with ArgoCD
-      action: debug:log
+      action: kubernetes:apply:github
       input:
-        message: |
-          📦 Deploying ArgoCD Application for ${{ parameters.name }}
-          The ArgoCD application manifest has been created in the repository.
-          It will be applied automatically by the CI/CD pipeline.
-          
-          To apply manually if needed:
-          kubectl apply -f https://raw.githubusercontent.com/${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}/main/argocd/application.yaml
+        owner: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
+        repo: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
+        manifestPath: argocd/application.yaml
+        namespace: idp-system
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - id: trigger-build
       name: Trigger Initial Build & Deploy

@@ -85,6 +85,16 @@ spec:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
     
+    - id: create-argocd-app
+      name: Deploy with ArgoCD
+      action: kubernetes:apply:github
+      input:
+        owner: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
+        repo: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
+        manifestPath: argocd/application.yaml
+        namespace: idp-system
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
     - id: trigger-build
       name: Trigger Initial Build & Deploy
       action: github:actions:dispatch

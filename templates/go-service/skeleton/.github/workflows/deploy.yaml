@@ -69,25 +69,6 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: update image tag to ${{ '${{' }} github.sha }}"
           git push || echo "No changes to push"
 
-      - name: Deploy ArgoCD Application
-        env:
-          KUBECONFIG_CONTENT: ${{ '${{' }} secrets.KUBECONFIG }}
-        run: |
-          if [ -n "$KUBECONFIG_CONTENT" ]; then
-            echo "Applying ArgoCD application to cluster..."
-            mkdir -p ~/.kube
-            echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
-            kubectl apply -f argocd/application.yaml
-            echo "✅ ArgoCD Application deployed successfully"
-          else
-            echo "⚠️  KUBECONFIG secret not set"
-            echo "ArgoCD application created in repo but not applied to cluster"
-            echo "To enable auto-deployment, add KUBECONFIG secret to repository settings"
-            echo ""
-            echo "For now, apply manually:"
-            echo "  kubectl apply -f argocd/application.yaml"
-          fi
-
       - name: Summary
         run: |
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
