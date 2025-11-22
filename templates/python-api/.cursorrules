@@ -1,0 +1,43 @@
+# Python API Template Rules (templates/python-api/)
+
+**Repository**: idp-templates  
+**Inherits from**: `/idp-templates/.cursorrules` (root)
+
+## Overview
+Backstage template for scaffolding Python FastAPI services with database support, full CRUD operations, and comprehensive testing.
+
+## Template Purpose
+- Generate FastAPI REST APIs
+- Include SQLAlchemy models
+- Database migrations with Alembic
+- OpenAPI documentation built-in
+- Production-ready configuration
+
+## Template Variables
+```yaml
+${{ values.name }}              # API name
+${{ values.description }}       # Description
+${{ values.owner }}             # Owner
+${{ values.include_database }}  # Boolean for DB support
+${{ values.database_type }}     # postgres/mysql/sqlite
+```
+
+## Generated Structure
+- FastAPI application with routers
+- Pydantic schemas
+- SQLAlchemy models
+- Database connection pooling
+- Health/ready endpoints
+- Requirements.txt with pinned versions
+
+## Best Practices
+- Include pytest configuration
+- Add example tests
+- Document API endpoints
+- Provide database migration examples
+- Include Docker Compose for local development
+
+## Related Files
+- `/idp-apps/todo-api/` - Example generated from this template
+- Parent: `/idp-templates/.cursorrules`
+

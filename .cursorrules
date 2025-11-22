@@ -1,0 +1,317 @@
+# IDP Templates Development Rules
+
+> **Repository**: idp-templates (Backstage Scaffolding Templates)  
+> **Part of**: Impelligent IDP Ecosystem (6 repositories)
+
+## Multi-Repository Context
+
+This repository contains **Backstage software templates** for scaffolding new applications and services.
+
+### Related Repositories
+- **impelligent-idp** (~/git/impelligent-idp) - Core platform
+- **idp-backstage** (~/git/idp-backstage) - Uses these templates
+- **idp-apps** (~/git/idp-apps) - Examples created from these templates
+- **idp-config** (~/git/idp-config) - GitOps configuration
+- **idp-docs** (~/git/idp-docs) - Documentation
+
+## Repository Purpose
+
+Backstage templates that enable:
+- ✅ Self-service application creation
+- ✅ Consistent project structure
+- ✅ GitOps-ready applications
+- ✅ Pre-configured CI/CD
+- ✅ Built-in best practices
+
+## Directory-Specific Rules
+
+Template-specific rules exist in subdirectories:
+- `/templates/go-service/.cursorrules` - Go microservice template
+- `/templates/python-api/.cursorrules` - Python FastAPI template
+- `/templates/react-frontend/.cursorrules` - React frontend template
+
+## Template Structure
+
+### Standard Template Layout
+```
+templates/
+└── template-name/
+    ├── template.yaml          # Backstage template definition
+    ├── skeleton/              # Template files
+    │   ├── catalog-info.yaml
+    │   ├── README.md
+    │   ├── Dockerfile
+    │   ├── k8s/
+    │   ├── argocd/
+    │   └── [source files]
+    └── README.md              # Template documentation
+```
+
+## Template.yaml Standards
+
+### Template Definition
+```yaml
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: go-service-template
+  title: Go Microservice
+  description: Create a new Go microservice with GitOps deployment
+  tags:
+    - go
+    - microservice
+    - recommended
+spec:
+  owner: platform-team
+  type: service
+  
+  parameters:
+    - title: Service Information
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique service name (lowercase, hyphens)
+          pattern: '^[a-z][a-z0-9-]*$'
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Brief service description
+        owner:
+          title: Owner
+          type: string
+          description: Team or individual owner
+          ui:field: OwnerPicker
+    
+    - title: Repository Configuration
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+  
+  steps:
+    - id: fetch
+      name: Fetch Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+    
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        description: ${{ parameters.description }}
+    
+    - id: register
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+  
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in Backstage
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+```
+
+## Variable Substitution
+
+### Nunjucks Template Syntax
+```yaml
+# In skeleton files
+name: ${{ values.name }}
+description: ${{ values.description }}
+owner: ${{ values.owner }}
+
+# Conditionals
+{% if values.includeDatabase %}
+- DATABASE_URL: postgres://...
+{% endif %}
+
+# Loops
+{% for env in values.environments %}
+- name: ${{ env.name }}
+  value: ${{ env.value }}
+{% endfor %}
+```
+
+### Common Template Variables
+```yaml
+${{ values.name }}              # Service name
+${{ values.description }}       # Description
+${{ values.owner }}             # Owner
+${{ values.component_id }}      # Generated component ID
+${{ parameters.repoUrl }}       # Repository URL
+${{ user.entity.metadata.name }} # Current user
+```
+
+## Skeleton Files
+
+### Must Include
+1. **catalog-info.yaml** - Backstage catalog entry
+2. **README.md** - Service documentation
+3. **Dockerfile** - Container build
+4. **k8s/** - Kubernetes manifests
+5. **argocd/** - ArgoCD application
+
+### File Naming
+- Use lowercase with hyphens
+- Template variables in content, not filenames
+- Preserve directory structure
+
+### Example catalog-info.yaml
+```yaml
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  description: ${{ values.description }}
+  annotations:
+    github.com/project-slug: ${{ values.github_org }}/${{ values.name }}
+    backstage.io/kubernetes-label-selector: 'app=${{ values.name }}'
+spec:
+  type: service
+  lifecycle: production
+  owner: ${{ values.owner }}
+  system: ${{ values.system | default('platform') }}
+```
+
+## Testing Templates
+
+### Manual Testing
+```bash
+# Test with backstage-cli
+npx @backstage/cli@latest create --dry-run
+
+# Test variable substitution
+# Create test parameters file
+cat > test-params.json <<EOF
+{
+  "name": "test-service",
+  "description": "Test service",
+  "owner": "platform-team"
+}
+EOF
+
+# Render template
+# (requires custom script or Backstage instance)
+```
+
+### Validation Checklist
+- [ ] All required parameters defined
+- [ ] Variable substitution works
+- [ ] Skeleton files render correctly
+- [ ] Generated project builds
+- [ ] Generated project deploys
+- [ ] catalog-info.yaml is valid
+
+## Best Practices
+
+### Parameter Design
+```yaml
+# Good: Clear, with validation
+name:
+  title: Service Name
+  type: string
+  description: Lowercase with hyphens only
+  pattern: '^[a-z][a-z0-9-]*$'
+  minLength: 3
+  maxLength: 50
+
+# Bad: Vague, no validation
+name:
+  type: string
+```
+
+### Sensible Defaults
+```yaml
+replicas:
+  title: Replica Count
+  type: integer
+  default: 1
+  minimum: 1
+  maximum: 10
+```
+
+### Documentation
+```yaml
+# Add help text to every parameter
+parameter:
+  title: Clear Title
+  type: string
+  description: Detailed explanation of what this parameter does and how it's used
+```
+
+## Maintaining Templates
+
+### Version Control
+- Tag releases: `v1.0.0`, `v1.1.0`
+- Update CHANGELOG.md
+- Test before merging
+
+### When to Update
+1. New platform features
+2. Security updates
+3. Dependency updates
+4. User feedback
+
+### Breaking Changes
+- Increment major version
+- Update documentation
+- Provide migration guide
+- Notify users
+
+## Template Actions
+
+### Built-in Actions
+```yaml
+# Fetch template
+- action: fetch:template
+  input:
+    url: ./skeleton
+
+# Publish to GitHub
+- action: publish:github
+  input:
+    repoUrl: ${{ parameters.repoUrl }}
+
+# Register in catalog
+- action: catalog:register
+  input:
+    catalogInfoPath: '/catalog-info.yaml'
+
+# Create GitHub secrets
+- action: github:actions:secrets:create
+  input:
+    secretName: API_KEY
+    secretValue: ${{ parameters.apiKey }}
+```
+
+## Related Files
+- `/templates/go-service/.cursorrules` - Go template
+- `/templates/python-api/.cursorrules` - Python template
+- `/templates/react-frontend/.cursorrules` - React template
+- Root rules: `/.cursorrules`
+
+## Reference
+- Backstage templates: https://backstage.io/docs/features/software-templates/
+- Nunjucks syntax: https://mozilla.github.io/nunjucks/
+- Template actions: https://backstage.io/docs/features/software-templates/builtin-actions
+

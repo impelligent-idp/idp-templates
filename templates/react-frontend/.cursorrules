@@ -1,0 +1,43 @@
+# React Frontend Template Rules (templates/react-frontend/)
+
+**Repository**: idp-templates  
+**Inherits from**: `/idp-templates/.cursorrules` (root)
+
+## Overview
+Backstage template for scaffolding React single-page applications with modern tooling, nginx deployment, and CI/CD pipeline.
+
+## Template Purpose
+- Generate React SPA with Vite
+- TypeScript support
+- Component library structure
+- nginx production deployment
+- Environment configuration
+
+## Template Variables
+```yaml
+${{ values.name }}              # App name
+${{ values.description }}       # Description
+${{ values.owner }}             # Owner
+${{ values.api_url }}           # Backend API URL
+${{ values.include_router }}    # Include React Router
+```
+
+## Generated Structure
+- Vite + React + TypeScript
+- Component folder structure
+- nginx.conf for production
+- Multi-stage Dockerfile
+- Environment variable injection
+- Jest/Vitest testing setup
+
+## Best Practices
+- Include example components
+- Add routing examples
+- Provide API integration examples
+- Document build process
+- Include environment examples
+
+## Related Files
+- `/idp-apps/frontend-demo/` - Example static site
+- Parent: `/idp-templates/.cursorrules`
+

@@ -1,0 +1,96 @@
+# Go Service Template Rules (templates/go-service/)
+
+**Repository**: idp-templates  
+**Inherits from**: `/idp-templates/.cursorrules` (root)
+
+## Overview
+Backstage template for scaffolding new Go microservices with full GitOps deployment, Kubernetes manifests, and CI/CD pipeline.
+
+## Template Purpose
+- Generate production-ready Go services
+- Include Kubernetes deployment manifests
+- Pre-configured ArgoCD application
+- GitHub Actions CI/CD pipeline
+- Health check endpoints built-in
+
+## Skeleton Structure
+```
+skeleton/
+├── catalog-info.yaml
+├── README.md
+├── main.go
+├── go.mod
+├── Dockerfile
+├── .github/
+│   └── workflows/
+│       └── build.yaml
+├── k8s/
+│   ├── deployment.yaml
+│   └── service.yaml
+├── argocd/
+│   └── application.yaml
+└── tekton/
+    └── pipeline.yaml
+```
+
+## Template Variables
+```yaml
+${{ values.name }}           # Service name (e.g., "user-service")
+${{ values.description }}    # Service description
+${{ values.owner }}          # Team/owner
+${{ values.port }}           # HTTP port (default: 8080)
+${{ values.github_org }}     # GitHub organization
+${{ values.namespace }}      # K8s namespace (default: default)
+```
+
+## Generated main.go Pattern
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+)
+
+func main() {
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "${{ values.port | default('8080') }}"
+    }
+
+    http.HandleFunc("/", handleRoot)
+    http.HandleFunc("/health", handleHealth)
+    http.HandleFunc("/ready", handleReady)
+
+    log.Printf("Starting ${{ values.name }} on port %s", port)
+    log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Welcome to ${{ values.name }}")
+}
+
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("OK"))
+}
+
+func handleReady(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("Ready"))
+}
+```
+
+## Best Practices
+- Include comprehensive README
+- Add example environment variables
+- Provide local development instructions
+- Document API endpoints
+- Include testing examples
+
+## Related Files
+- `/idp-apps/hello-world/` - Example generated from this template
+- Parent: `/idp-templates/.cursorrules`
+
